@@ -1,17 +1,17 @@
-NAS INITIALIZATION
-install python and pip
-navigate to the root of the directory and run these commands:
+NAS INITIALIZATION<br>
+install python and pip<br>
+navigate to the root of the directory and run these commands:<br>
 ```
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ./run.sh
 ```
-
-You can edit the port and the listening IP and port by modifying the run.sh file.
-Whenever you upload a file, it will be places on the current directory you have 
-pressed "Upload file". Make sure you are on the desired directory before uploading.
-Have fun!
+<br>
+You can edit the port and the listening IP and port by modifying the run.sh file.<br>
+Whenever you upload a file, it will be places on the current directory you have <br>
+pressed "Upload file". Make sure you are on the desired directory before uploading.<br>
+<br>Have fun!<br>
 
 ----------------------------------------------------
 NAS STRUCTURE
