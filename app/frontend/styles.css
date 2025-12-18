@@ -27,5 +27,11 @@ a.download{background:#111827;color:#d1fae5;padding:6px 10px;border-radius:6px;t
 button.delete{background:#ef4444;color:white;padding:6px 10px;border-radius:6px;border:none;margin-left:8px;cursor:pointer}
 button.delete:disabled{opacity:.6;cursor:wait}
 .hint{display:block;color:var(--muted);font-size:12px;margin-top:6px}
+
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);z-index:9999}
+.modal .modal-content{background:var(--card);padding:12px;border-radius:8px;max-width:90%;max-height:90%;overflow:auto}
+.modal img, .modal video, .modal audio{max-width:100%;max-height:70vh}
+.modal .close{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);padding:6px 10px;border-radius:6px;cursor:pointer;margin-bottom:8px}
+
 .empty{color:var(--muted);padding:12px}
 .error{color:#fca5a5}

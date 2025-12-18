@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from fastapi.responses import FileResponse
-from app.services.filesystem import list_dir, get_file, save_file, delete_file, delete_dir, create_dir
+from fastapi import APIRouter, HTTPException, UploadFile, File, Request
+from fastapi.responses import FileResponse, StreamingResponse
+import re
+import mimetypes
+from app.services.filesystem import list_dir, get_file, save_file, delete_file, delete_dir, create_dir, rename_item
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -12,6 +14,52 @@ def download_file(path: str):
 			file_path,
 			filename=file_path.name
 		)
+	except FileNotFoundError:
+		raise HTTPException(status_code=404, detail="File not found")
+	except PermissionError:
+		raise HTTPException(status_code=403, detail="Forbidden")
+
+
+@router.get("/stream/{path:path}")
+def stream_file(path: str, request: Request):
+	"""Stream a file with support for Range requests (for video/audio preview)."""
+	try:
+		file_path = get_file(path)
+		size = file_path.stat().st_size
+		mime = mimetypes.guess_type(str(file_path))[0] or "application/octet-stream"
+		range_header = request.headers.get("range")
+		if range_header:
+			m = re.match(r"bytes=(\d+)-(\d*)", range_header)
+			if not m:
+				raise HTTPException(status_code=416, detail="Invalid Range")
+			start = int(m.group(1))
+			end = int(m.group(2)) if m.group(2) else size - 1
+			if start >= size or start > end:
+				raise HTTPException(status_code=416, detail="Range not satisfiable")
+			length = end - start + 1
+
+			def iter_file():
+				with file_path.open("rb") as f:
+					f.seek(start)
+					remaining = length
+					chunk_size = 1024 * 1024
+					while remaining > 0:
+						read = f.read(min(chunk_size, remaining))
+						if not read:
+							break
+						remaining -= len(read)
+						yield read
+
+			headers = {
+				"Content-Range": f"bytes {start}-{end}/{size}",
+				"Accept-Ranges": "bytes",
+				"Content-Length": str(length),
+				"Content-Type": mime,
+			}
+			return StreamingResponse(iter_file(), status_code=206, headers=headers, media_type=mime)
+		else:
+			headers = {"Accept-Ranges": "bytes"}
+			return FileResponse(file_path, media_type=mime, headers=headers)
 	except FileNotFoundError:
 		raise HTTPException(status_code=404, detail="File not found")
 	except PermissionError:
@@ -88,6 +136,21 @@ def mkdir_root(name: str):
 		raise HTTPException(status_code=409, detail="Directory already exists")
 	except PermissionError:
 		raise HTTPException(status_code=403, detail="Forbidden")
+
+@router.post("/rename/{path:path}")
+def rename_route(path: str, name: str):
+	"""Rename a file or directory at `path` to `name` (query string param)."""
+	try:
+		new = rename_item(path, name)
+		return {"old": path, "new": str(new.name)}
+	except FileNotFoundError:
+		raise HTTPException(status_code=404, detail="File not found")
+	except FileExistsError:
+		raise HTTPException(status_code=409, detail="Target name already exists")
+	except PermissionError:
+		raise HTTPException(status_code=403, detail="Forbidden")
+	except ValueError:
+		raise HTTPException(status_code=400, detail="Invalid name")
 
 @router.get("/")
 def list_root():

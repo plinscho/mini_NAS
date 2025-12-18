@@ -154,3 +154,38 @@ def create_dir(relative_path: str):
     target.mkdir(parents=True, exist_ok=False)
     return target
 
+
+def rename_item(relative_path: str, new_name: str):
+    """Rename a file or directory within STORAGE_PATH.
+
+    `new_name` must be a single name (no slashes). Raises:
+      - FileNotFoundError if source doesn't exist
+      - FileExistsError if destination already exists
+      - PermissionError for path escapes
+      - ValueError for invalid new_name
+    """
+    relative_path = relative_path.lstrip("/")
+    storage_name = STORAGE_PATH.name
+    if relative_path == storage_name or relative_path.startswith(f"{storage_name}/"):
+        relative_path = relative_path[len(storage_name):].lstrip("/")
+
+    if not new_name or new_name.strip() == "" or "/" in new_name:
+        raise ValueError("Invalid new name")
+
+    base = STORAGE_PATH.resolve()
+    src = (base / relative_path).resolve()
+
+    if not src.is_relative_to(base):
+        raise PermissionError
+    if not src.exists():
+        raise FileNotFoundError
+
+    dst = src.with_name(new_name)
+    if not dst.resolve().is_relative_to(base):
+        raise PermissionError
+    if dst.exists():
+        raise FileExistsError
+
+    src.rename(dst)
+    return dst
+
