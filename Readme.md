@@ -33,11 +33,12 @@ mini-nas/
 └── requirements.txt
 ```
 
+```
 app/		--> Codebase
 routes/		--> Only HTTP (FastApi)
 services/	--> Logic (filesystem)
 storage/	--> Files and directories saved and served
-
+```
 
 
 
