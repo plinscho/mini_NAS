@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>mini-nas — Files</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header>
+    <h1>mini‑nas</h1>
+    <nav id="breadcrumbs">/</nav>
+  </header>
+
+  <main>
+    <section id="controls">
+      <button id="upBtn" disabled>BACK</button>
+      <button id="mkdirBtn">New Folder</button>
+      <!-- Un único control de subida: botón visible + input oculto -->
+      <button id="uploadBtn" class="upload">Upload File</button>
+      <input id="fileInput" type="file" accept="*/*" style="display:none" />
+    </section>
+
+    <section id="listing" aria-live="polite"></section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
